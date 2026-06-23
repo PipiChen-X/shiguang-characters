@@ -30,6 +30,8 @@ The site should **not** feel like:
 
 The project should be suitable for **GitHub Pages** deployment.
 
+Use a one-codebase, multi-deployment structure. GitHub Pages is the international preview target, and future mainland China cloud deployment should be able to reuse the same static build output when possible. Avoid hard-coding deployment paths unless a target explicitly requires it.
+
 Use a static front-end approach.
 
 Preferred stack:
