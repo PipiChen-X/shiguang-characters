@@ -1,6 +1,6 @@
 # 拾光群像
 
-「拾光群像」是一个面向大众的虚拟人物音乐企划展示页，用于介绍以音乐、影像和故事逐渐生长的虚拟人物。第一版采用静态前端实现，适合部署到 GitHub Pages。
+「拾光群像」是一个面向大众的虚拟人物音乐企划展示页，用于介绍以音乐、影像和故事逐渐生长的虚拟人物。第一版采用静态前端实现，当前 GitHub Pages 作为国际访问 / 第一版预览站；未来同一份代码和构建产物也可以部署到中国大陆云服务，作为大陆普通用户的稳定访问站。
 
 ## 第一版范围
 
@@ -42,39 +42,58 @@ npm run build
 
 构建产物会输出到 `dist/` 目录。
 
-## 部署到 GitHub Pages
+## 部署
 
-### 方式一：部署到用户或组织站点
+### GitHub Pages：国际预览部署
 
-如果仓库名是 `<用户名>.github.io`，通常无需修改 Vite 配置，直接部署 `dist/` 即可。
+本仓库包含 GitHub Actions 自动部署配置：
 
-### 方式二：部署到项目站点
+```text
+.github/workflows/deploy.yml
+```
 
-如果仓库作为项目站点部署，例如访问路径为：
+当 `main` 分支收到 push 时，workflow 会自动执行：
+
+```bash
+npm install
+npm run build
+```
+
+随后将 `dist/` 作为 GitHub Pages 部署产物上传并发布。该 workflow 也支持在 GitHub Actions 页面通过 `workflow_dispatch` 手动触发。
+
+GitHub 仓库的 Pages 设置建议选择：
+
+```text
+Settings → Pages → Build and deployment → Source: GitHub Actions
+```
+
+如果仓库作为项目站点部署，预期访问地址通常为：
 
 ```text
 https://<用户名>.github.io/shiguang-characters/
 ```
 
-请在需要时新增或调整 `vite.config.js`，设置：
+如果仓库是用户或组织站点（例如 `<用户名>.github.io`），预期访问地址通常为：
+
+```text
+https://<用户名>.github.io/
+```
+
+### 多地部署兼容说明
+
+当前 `vite.config.js` 使用：
 
 ```js
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-
-export default defineConfig({
-  plugins: [react()],
-  base: '/shiguang-characters/',
-})
+base: './'
 ```
 
-随后运行：
+这会让构建后的静态资源使用相对路径，避免把站点写死到 GitHub Pages 的 `/shiguang-characters/` 子路径。这样更适合“一份代码，多地部署”：同一份 `dist/` 既可以发布到 GitHub Pages 作为国际预览站，也可以在未来上传到中国大陆云服务的静态站点、对象存储或 CDN。
 
-```bash
-npm run build
-```
+未来部署到中国大陆云服务时，通常复用以下内容即可：
 
-并将 `dist/` 目录作为 GitHub Pages 的发布内容。也可以使用 GitHub Actions 在每次推送后自动构建并发布 `dist/`。
+- 源码与配置：`src/`、`public/`、`index.html`、`vite.config.js`、`package.json`；
+- 构建命令：`npm install`、`npm run build`；
+- 静态构建产物：`dist/`。
 
 ## 人物数据位置
 
@@ -107,9 +126,9 @@ src/data/characters.js
 
 ```js
 {
-  image: '/images/su-wanshi.jpg',
-  audio: '/audio/su-wanshi-preview.mp3',
-  video: '/video/su-wanshi-showcase.mp4',
+  image: './images/su-wanshi.jpg',
+  audio: './audio/su-wanshi-preview.mp3',
+  video: './video/su-wanshi-showcase.mp4',
 }
 ```
 
