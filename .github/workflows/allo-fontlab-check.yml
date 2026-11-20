@@ -30,7 +30,12 @@ jobs:
       - name: Install CI browser test tooling
         run: |
           npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.56.1
-          npx playwright install --with-deps chromium
+      - name: Find preinstalled Chrome on runner
+        run: |
+          CHROME_BIN="$(command -v google-chrome || command -v chromium || true)"
+          if [ -z "$CHROME_BIN" ]; then echo 'No Chrome binary in runner'; exit 1; fi
+          echo "CHROME_PATH=$CHROME_BIN" >> "$GITHUB_ENV"
+          "$CHROME_BIN" --version
       - name: Run preview server
         run: |
           (npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/allo-preview.log 2>&1 &)
