@@ -6,7 +6,7 @@ import path from 'node:path'
 const base = 'http://127.0.0.1:4173/?fontlab=1'
 const outDir = path.resolve('artifacts')
 await mkdir(outDir, { recursive: true })
-const browser = await chromium.launch({ headless: true })
+const browser = await chromium.launch({ headless: true, executablePath: process.env.CHROME_PATH || undefined, args: ['--no-sandbox'] })
 const page = await browser.newPage({ viewport: { width: 1440, height: 1100 }, acceptDownloads: true })
 const errors = []
 page.on('pageerror', e => errors.push(e.message))
