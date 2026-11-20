@@ -1,5 +1,6 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
+import FontLab from './FontLab'
 import { characters } from './data/characters'
 import 'allo-font'
 import './styles.css'
@@ -84,4 +85,5 @@ function App() {
   )
 }
 
-createRoot(document.getElementById('root')).render(<App />)
+const isFontLab = new URLSearchParams(window.location.search).get('fontlab') === '1'
+createRoot(document.getElementById('root')).render(isFontLab ? <FontLab /> : <App />)
