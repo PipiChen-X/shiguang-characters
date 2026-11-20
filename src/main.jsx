@@ -1,6 +1,7 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { characters } from './data/characters'
+import 'allo-font'
 import './styles.css'
 
 function Placeholder({ type, children }) {
