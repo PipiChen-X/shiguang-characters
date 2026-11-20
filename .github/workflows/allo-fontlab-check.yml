@@ -36,6 +36,12 @@ jobs:
           if [ -z "$CHROME_BIN" ]; then echo 'No Chrome binary in runner'; exit 1; fi
           echo "CHROME_PATH=$CHROME_BIN" >> "$GITHUB_ENV"
           "$CHROME_BIN" --version
+      - name: Install CJK fonts for accurate Chinese screenshot rendering
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-cjk
+          fc-cache -f
+          fc-match 'Noto Serif SC'
       - name: Run preview server
         run: |
           (npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/allo-preview.log 2>&1 &)
