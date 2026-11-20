@@ -50,6 +50,45 @@ try {
   assert.equal(height, 1350)
   assert.ok(data.length > 3000, 'Suspiciously small image')
   assert.deepEqual(errors, [], 'Browser runtime errors detected')
+
+  // Compare the actual Shiguang Characters page under the same browser and viewport.
+  // Baseline reproduces the original font declarations for .eyebrow; all other CSS is untouched.
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' })
+  await page.evaluate(() => document.fonts.load('600 24px Allo', 'Characters'))
+  const originalStyle = await page.addStyleTag({content: `
+    .eyebrow {
+      font-family: "Noto Serif SC", "Songti SC", serif !important;
+      font-weight: 400 !important;
+      font-variation-settings: normal !important;
+    }
+  `})
+  const take = async (variant, prefix) => {
+    await page.evaluate(() => window.scrollTo(0, 0))
+    await page.screenshot({ path: path.join(outDir, `${prefix}-desktop-hero.png`) })
+    await page.locator('#characters').screenshot({ path: path.join(outDir, `${prefix}-desktop-characters.png`) })
+    await page.locator('.character-detail').first().screenshot({path: path.join(outDir, `${prefix}-desktop-person.png`)})
+    await page.setViewportSize({width: 390, height: 844})
+    await page.evaluate(() => window.scrollTo(0, 0))
+    await page.screenshot({ path: path.join(outDir, `${prefix}-mobile-hero.png`) })
+    await page.locator('#characters').screenshot({ path: path.join(outDir, `${prefix}-mobile-characters.png`) })
+    await page.setViewportSize({width: 1440, height: 900})
+    return await page.evaluate(() => ({
+      exampleFontFamily: getComputedStyle(document.querySelector('#characters .eyebrow')).fontFamily,
+      exampleFontWeight: getComputedStyle(document.querySelector('#characters .eyebrow')).fontWeight,
+      pageWidth: document.documentElement.scrollWidth,
+      viewportWidth: window.innerWidth,
+    }))
+  }
+  const originalMetrics = await take('original', 'original')
+  await originalStyle.evaluate(el => el.remove())
+  const alloMetrics = await take('allo', 'allo')
+  assert.ok(alloMetrics.exampleFontFamily.includes('Allo'), 'Allo not active on site')
+  assert.ok(!originalMetrics.exampleFontFamily.includes('Allo'), 'Baseline did not restore original font')
+  assert.equal(alloMetrics.pageWidth, alloMetrics.viewportWidth, 'Desktop layout overflows viewport')
+  const comparison = { original:originalMetrics, allo:alloMetrics, screenshots:10 }
+  await writeFile(path.join(outDir, 'type-comparison.json'), JSON.stringify(comparison,null,2))
+  console.log('SITE_FONT_COMPARISON ' + JSON.stringify(comparison))
   const result = { ok:true, fonts, width, height, bytes:data.length }
   await writeFile(path.join(outDir, 'result.json'), JSON.stringify(result, null, 2))
   console.log(JSON.stringify(result, null, 2))
